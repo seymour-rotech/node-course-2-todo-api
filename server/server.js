@@ -44,14 +44,11 @@ app.get('/todos/:id',
             (todo) => {
                 if (!todo)
                     {
-                        return res.send('Unable to find Todo')
+                        return res.status(404).send()
                     }
-
-                res.send(JSON.stringify({todo}, undefined,2))
-                },
-            (err) => {
-                res.status(404).send(err)
-            }
+                //res.send(JSON.stringify(todo, undefined, 2))
+                res.send({todo})
+                }
         ).catch(
             (err) => {
                 res.status(404).send(err)
