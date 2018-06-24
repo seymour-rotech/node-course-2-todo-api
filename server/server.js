@@ -112,7 +112,6 @@ app.patch('/todos/:id',
                 if (!todo) {
                     return res.status(404).send()
                 }
-
                 res.send({todo})
             }            
         ).catch(
