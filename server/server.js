@@ -135,11 +135,23 @@ app.post('/users',
         console.log(body)
         var user = new User(body)
 
-        user.save().then(
-                res.send(user)
-            ).catch(
+        user.save().then( () => {
+                //console.log(user)
+                user.generateAuthToken()
+            }).then( (token) => {
+                res.header('x-auth', token).send(user)
+            }).catch(
                 (e) => res.status(400).send(e)
             )
+    }
+)
+
+app.get('/users',
+    (req, res) => {
+        User.find().then(
+            (user) => { res.send({user}) },
+            (e) => {res.status(400).send(e)}
+        )
     }
 )
 
