@@ -9,6 +9,8 @@ var {Todo} = require('./models/todo')
 var {User} = require('./models/user')
 var {ObjectID} = require('mongodb')
 
+var {authenicate} = require('./middleware/authenticate')
+
 var app = express()
 
 //const port = process.env.PORT || 3000
@@ -132,17 +134,17 @@ app.post('/users',
         //     password: body.password            
         // })
 
-        console.log(body)
+        console.log('body :', body)
         var user = new User(body)
 
         user.save().then( () => {
-                //console.log(user)
-                user.generateAuthToken()
+                return user.generateAuthToken()
             }).then( (token) => {
                 res.header('x-auth', token).send(user)
-            }).catch(
-                (e) => res.status(400).send(e)
-            )
+            }).catch( (e) => {
+                //console.log('Error : ', e.errmsg)
+                res.status(400).send(e)
+            })
     }
 )
 
@@ -152,6 +154,49 @@ app.get('/users',
             (user) => { res.send({user}) },
             (e) => {res.status(400).send(e)}
         )
+    }
+)
+
+//Middleware => Move to authenticate.js
+// var authenicate = (req, res, next) => {
+//     var token = req.header('x-auth')
+
+//     User.findByToken(token).then(
+//         (user) => {
+//             if (!user) {
+//                 return Promise.reject()
+//             }
+//             //res.send(user)
+//             req.user = user
+//             req.token = token
+//             next()
+//         }
+//     ).catch( 
+//         (e) => {
+//             res.status(401).send()
+//         }
+//     )
+// }
+
+app.get('/users/me', authenicate, (req, res) => {
+
+        res.send(req.user)
+
+        //Replace By Middle ware
+        // var token = req.header('x-auth')
+
+        // User.findByToken(token).then(
+        //     (user) => {
+        //         if (!user) {
+        //             return Promise.reject()
+        //         }
+        //         res.send(user)
+        //     }
+        // ).catch( 
+        //     (e) => {
+        //         res.status(401).send()
+        //     }
+        // )
     }
 )
 

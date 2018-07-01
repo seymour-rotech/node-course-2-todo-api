@@ -29,8 +29,9 @@ var UserSchema = new mongoose.Schema({
                     type : String,
                     required: true
                 }
-            }]    
+            }]  
 })
+//}, {usePushEach : true})
 
 UserSchema.methods.toJSON = function () {
     var user = this;
@@ -39,26 +40,44 @@ UserSchema.methods.toJSON = function () {
     return _.pick(userObject, ['_id', 'email'])
 }
 
+//Instance Method
 UserSchema.methods.generateAuthToken = function () {
 
-    //console.log('Here')
-
     var user = this
-    //console.log('user', user, user._id)
-
     var access = 'auth'
-    var token = jwt.sign({ _id: user._id.toHexString(), access}, 
-                         'abc123').toString()
-    
-    //console.log('token', token)                        
+    var token = jwt.sign({ _id: user._id.toHexString(), access}, 'abc123').toString()
 
-    user.tokens.concat([{access, token}])
-
-    //console.log(user)
-
-    return user.save().then(
-        () => { return token }
+    user.tokens.push({access, token})
+    //user.tokens.concat([{access, token}])
+  
+    return user.save().then( () => {
+        return token 
+    }).catch((e) => 
+        console.log('Error :', e.message)
     )
+}
+
+//Model Method
+UserSchema.statics.findByToken = function (token) {
+    var User = this
+    var decoded
+
+    try {
+        decoded = jwt.verify(token, 'abc123')        
+    } catch (e) {
+        // return new Promise((resolve, reject) => {
+        //     reject();
+        // })
+
+        return Promise.reject()
+    }
+
+    return User.findOne({
+        '_id' : decoded._id,
+        //Query Nest Document...
+        'tokens.token' : token,
+        'tokens.access' : 'auth'
+    })
 }
 
 var User = mongoose.model('User', UserSchema )
