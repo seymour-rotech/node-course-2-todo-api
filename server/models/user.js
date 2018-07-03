@@ -85,7 +85,7 @@ UserSchema.pre( 'save', function (next) {
     var user = this
 
     if (user.isModified ('password')) {
-        
+        //Encrpt a plain text password to hashed passwod and save to MongoDB later.
         bcrypt.genSalt(10, (err, salt) => {
             bcrypt.hash(user.password, salt, (err, hash) => {
                 user.password = hash
